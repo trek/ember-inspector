@@ -49,12 +49,18 @@ export default class extends DebugPort {
         this.lastRightClicked = null;
         this.inspectNearest(lastRightClicked);
       },
+
+      editorUrlPatternReceived(message) {
+        this.setEditorPattern(message.value);
+      },
     };
   }
 
   // eslint-disable-next-line ember/classic-decorator-hooks
   init() {
     super.init();
+
+    this.editorPattern = null;
 
     let renderTree = (this.renderTree = new RenderTree({
       owner: this.getOwner(),
@@ -72,6 +78,7 @@ export default class extends DebugPort {
     this.viewInspection = new ViewInspection({
       renderTree,
       objectInspector: this.objectInspector,
+      editorUrlPattern: this.editorPattern,
       didShow: bound(this, this.didShowInspection),
       didHide: bound(this, this.didHideInspection),
       didStartInspecting: bound(this, this.didStartInspecting),
@@ -197,5 +204,12 @@ export default class extends DebugPort {
 
   getOwner() {
     return this.namespace?.owner;
+  }
+
+  setEditorPattern(pattern) {
+    this.editorPattern = pattern && typeof pattern === 'string' ? pattern : null;
+    if (this.viewInspection) {
+      this.viewInspection.editorUrlPattern = this.editorPattern;
+    }
   }
 }
